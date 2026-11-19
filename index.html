@@ -15,6 +15,7 @@
   --art:#f4dcfa; --art-b:#a660c2;
   --sport:#d6f3df; --sport-b:#3d9e5f;
   --fun:#ffe0e4; --fun-b:#e0607a;
+  --rest:#e1e5f0; --rest-b:#5c6b8a;
   --rh:34px; --hh:40px; --tw:56px;
   --font:'Bpmf Iansui','Iansui','Microsoft JhengHei','PingFang TC',sans-serif;
 }
@@ -83,6 +84,7 @@ button,input,select{font-family:inherit;color:inherit}
 .cat-art  {--c:var(--art);  --b:var(--art-b);  border-style:double!important; border-width:4px!important}
 .cat-sport{--c:var(--sport);--b:var(--sport-b);border-style:solid!important;  border-width:3.5px!important}
 .cat-fun  {--c:var(--fun);  --b:var(--fun-b);  border-style:dashed!important; border-width:2.5px!important}
+.cat-rest {--c:var(--rest); --b:var(--rest-b); border-style:solid!important;  border-width:2px!important}
 .legend span{background:var(--c);border:2px solid var(--b)}
 
 /* ---------- dialog ---------- */
@@ -136,6 +138,7 @@ dialog::backdrop{background:rgba(74,63,53,.35)}
   .slot.sel,.slot.pending,.slot:hover{background:none!important;outline:none!important}
   .grid{border-bottom:.4mm solid #000}
   .ev,.legend span{background:#fff!important;border-color:#000!important;color:#000;box-shadow:none!important;filter:none!important}
+  .ev.cat-rest,.legend span.cat-rest{background:#e2e2e2!important}  /* 休息：黑白列印用淺灰底區分 */
   .ev{border-radius:2mm;padding:.3mm .8mm}
   .ev .ico{width:min(8mm,70%);color:#000}
   .ev .ttl{font-size:9pt}
@@ -190,7 +193,7 @@ const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sun
 const ROWS = 30;           // 07:00 – 22:00, every 30 minutes
 const START_HOUR = 7;
 const CATS = {
-  life:{name:'生活'}, study:{name:'學習'}, art:{name:'才藝'}, sport:{name:'運動'}, fun:{name:'休閒'}
+  life:{name:'生活'}, study:{name:'學習'}, art:{name:'才藝'}, sport:{name:'運動'}, fun:{name:'休閒'}, rest:{name:'休息'}
 };
 const K = 'class="k"', F = 'class="fl"';
 const eye = (x,y)=>`<circle ${K} cx="${x}" cy="${y}" r="1.7"/>`;
@@ -201,7 +204,7 @@ const ICONS = {
   school:{name:'上學',cat:'study',svg:`<rect ${F} x="10" y="14" width="28" height="29" rx="8"/><path d="M18 14v-3a6 6 0 0 1 12 0v3"/><rect x="16" y="28" width="16" height="10" rx="3"/><path d="M20 32h8"/>`},
   class:{name:'上課',cat:'study',svg:`<rect ${F} x="5" y="7" width="38" height="25" rx="3"/><path d="M14 32l-3 9M34 32l3 9M12 26l4-12 4 12M13.5 22h5M27 16h10M27 21h7M27 26h9"/>`},
   lunch:{name:'午餐',cat:'life',svg:`<path ${F} d="M24 7c-4 0-6 3-8 6L8 29c-3 6 0 12 7 12h18c7 0 10-6 7-12l-8-16c-2-3-4-6-8-6z"/><rect ${K} x="18" y="31" width="12" height="10" rx="1"/>${eye(19.5,23)}${eye(28.5,23)}<path d="M22 26.5q2 2 4 0"/>`},
-  nap:{name:'午睡',cat:'life',svg:`<path ${F} d="M12 38a8 8 0 0 1 0-16 10 10 0 0 1 19-4 8 8 0 0 1 7 20z"/><path d="M15 29q2.5 2.5 5 0M25 29q2.5 2.5 5 0M33 5h7l-7 7h7M41 15h4l-4 4h4"/>`},
+  nap:{name:'午睡',cat:'rest',svg:`<path ${F} d="M12 38a8 8 0 0 1 0-16 10 10 0 0 1 19-4 8 8 0 0 1 7 20z"/><path d="M15 29q2.5 2.5 5 0M25 29q2.5 2.5 5 0M33 5h7l-7 7h7M41 15h4l-4 4h4"/>`},
   home:{name:'放學',cat:'life',svg:`<path ${F} d="M7 22L24 8l17 14v18a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><rect x="19.5" y="30" width="9" height="12" rx="2"/><path ${K} d="M24 25c-4-3-5-5-3-7 1-1 2.6-.8 3 .6.4-1.4 2-1.6 3-.6 2 2 1 4-3 7z"/>`},
   tutor:{name:'補習',cat:'study',svg:`<rect ${F} x="11" y="6" width="27" height="36" rx="3"/><path d="M11 13H7M11 20H7M11 27H7M11 34H7M17 14h15M17 20h15M18 30l4 4 8-8"/>`},
   homework:{name:'寫作業',cat:'study',svg:`<rect ${F} x="6" y="7" width="25" height="33" rx="3"/><path d="M11 15h15M11 21h15M11 27h9"/><path ${F} d="M27 37L40 24l4.5 4.5L31.5 41.5 25 43z"/><path d="M27 37l4.5 4.5M37 27l4.5 4.5"/>`},
@@ -220,7 +223,7 @@ const ICONS = {
   chores:{name:'做家事',cat:'life',svg:`<path d="M24 3v18"/><rect ${F} x="16" y="20" width="16" height="6" rx="2"/><path ${F} d="M16 26h16l5 17H11z"/><path d="M19.5 30l-2 13M24 30v13M28.5 30l2 13M40 8v6M37 11h6M8 14v4M6 16h4"/>`},
   bath:{name:'洗澡',cat:'life',svg:`<circle cx="15" cy="15" r="4"/><circle cx="24" cy="9" r="3"/><circle cx="32" cy="17" r="5"/><path ${F} d="M4 24h40v4c0 7-5 12-12 12H16C9 40 4 35 4 28z"/><path d="M13 40l-2 4M35 40l2 4"/>`},
   dinner:{name:'吃晚餐',cat:'life',svg:`<path d="M30 23l12-17M34 23l11-13M14 18c-2-3 2-4 0-7M22 18c-2-3 2-4 0-7"/><path ${F} d="M5 23h38c0 10-8 17-19 17S5 33 5 23z"/><path d="M18 41h12"/>${eye(19,29)}${eye(29,29)}<path d="M22 32.5q2 1.8 4 0"/>`},
-  sleep:{name:'睡覺',cat:'life',svg:`<path ${F} d="M28 5a19 19 0 1 0 15 30A15 15 0 0 1 28 5z"/><path d="M14 25q3 3 6 0M41 7v8M37 11h8M36 22v4M34 24h4"/>`},
+  sleep:{name:'睡覺',cat:'rest',svg:`<path ${F} d="M28 5a19 19 0 1 0 15 30A15 15 0 0 1 28 5z"/><path d="M14 25q3 3 6 0M41 7v8M37 11h8M36 22v4M34 24h4"/>`},
   other:{name:'其他',cat:'life',svg:`<path ${F} d="M24 5l5.6 11.6 12.7 1.7-9.3 8.9 2.3 12.6L24 33.8l-11.3 6 2.3-12.6-9.3-8.9 12.7-1.7z"/>${eye(20,24)}${eye(28,24)}<path d="M22 28q2 1.8 4 0"/>`},
 };
 const svgOf = key => `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${(ICONS[key]||ICONS.other).svg}</svg>`;
@@ -230,6 +233,8 @@ const timeLabel = b => `${START_HOUR + Math.floor(b/2)}:${b%2 ? '30' : '00'}`;
 const STORE = 'kid-week-schedule-v1';
 let state = {name:'', zy:true, events:[]};
 try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && Array.isArray(s.events)) state = Object.assign(state, s); } catch(e){}
+// 舊資料：午睡、睡覺原本歸在「生活」，改成新的「休息」
+state.events.forEach(e=>{ if ((e.icon==='nap'||e.icon==='sleep') && e.cat==='life') e.cat='rest'; });
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){} };
 const undoStack = [];
 function commit(mutator){
