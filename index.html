@@ -126,11 +126,12 @@ dialog::backdrop{background:rgba(74,63,53,.35)}
   #sheet{max-width:none;width:194mm;border:none;border-radius:0;padding:0;background:#fff}
   .sheet-head{margin:0 0 1.5mm;height:10mm;flex-wrap:nowrap}
   .sheet-head .deco{width:8mm;height:8mm}
-  .sheet-head .deco .fl{fill:#fff}
+  body:not(.print-color) .sheet-head .deco .fl{fill:#fff}
   .title-line,#who{font-size:14pt}
   #who{border-bottom:1px solid #000;color:#000}
   .legend span{font-size:8pt;padding:0 1.5mm}
-  .dayhead{font-size:10pt;border-bottom:.5mm solid #000;color:#000!important}
+  .dayhead{font-size:10pt;border-bottom:.5mm solid #000;color:#000}
+  body:not(.print-color) .dayhead{color:#000!important}
   .timecol .t{font-size:7.5pt;padding-right:1.2mm}
   .timecol .t.half{font-size:6pt;opacity:.6}
   .day{border-left:.3mm solid #000}
@@ -139,8 +140,10 @@ dialog::backdrop{background:rgba(74,63,53,.35)}
   .slot.hr{border-bottom:.3mm solid #444}
   .slot.sel,.slot.pending,.slot:hover{background:none!important;outline:none!important}
   .grid{border-bottom:.4mm solid #000}
-  .ev,.legend span{background:#fff!important;border-color:#000!important;color:#000;box-shadow:none!important;filter:none!important}
-  .ev.cat-rest,.legend span.cat-rest{background:#e2e2e2!important}  /* 休息：黑白列印用淺灰底區分 */
+  .ev{box-shadow:none!important;filter:none!important}
+  /* 黑白列印（預設）；按「彩色列印」時 body 會加上 .print-color，保留畫面上的顏色 */
+  body:not(.print-color) .ev,body:not(.print-color) .legend span{background:#fff!important;border-color:#000!important;color:#000}
+  body:not(.print-color) .ev.cat-rest,body:not(.print-color) .legend span.cat-rest{background:#e2e2e2!important}  /* 休息：黑白列印用淺灰底區分 */
   .ev{border-radius:2mm;padding:.3mm .8mm}
   .ev .ico{width:min(8mm,70%);color:#000}
   .ev .ttl{font-size:9pt}
@@ -157,7 +160,8 @@ dialog::backdrop{background:rgba(74,63,53,.35)}
   <button class="btn" id="bUndo" disabled>↩ 上一步</button>
   <button class="btn" id="bZy">注音：開</button>
   <button class="btn danger" id="bClear">全部清除</button>
-  <button class="btn primary" id="bPrint">🖨 列印／存成 PDF</button>
+  <button class="btn primary" id="bPrint">🖨 黑白列印</button>
+  <button class="btn primary" id="bPrintColor">🎨 彩色列印</button>
   <p class="hint" id="hint"></p>
 </div>
 
@@ -458,7 +462,15 @@ $('#bClear').addEventListener('click', ()=>{
   if (!state.events.length) return;
   if (confirm('確定要把整個星期的行程都清掉嗎？（可以按「上一步」救回來）')) commit(()=>{ state.events = []; });
 });
-$('#bPrint').addEventListener('click', ()=>{ cancelPending(); window.print(); });
+function printSheet(color){
+  cancelPending();
+  document.body.classList.toggle('print-color', color);
+  window.print();
+}
+$('#bPrint').addEventListener('click', ()=>printSheet(false));
+$('#bPrintColor').addEventListener('click', ()=>printSheet(true));
+// 用 Ctrl+P 直接列印時是黑白；列印結束後恢復預設
+window.addEventListener('afterprint', ()=>document.body.classList.remove('print-color'));
 $('#who').addEventListener('input', e=>{ state.name = e.target.value; save(); });
 
 buildGrid(); buildDialog(); render();
