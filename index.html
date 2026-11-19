@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的一週行程表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/bpmf-iansui@5.2.2/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/iansui@5.2.2/index.css">
+<style>
+:root{
+  --ink:#4a3f35; --line:#e6dccd; --line-hour:#cdbfa9; --paper:#fffdf8; --bg:#fbf5ea;
+  --accent:#ff9f68; --accent-d:#e57c43; --sel:#ffe7a8;
+  --life:#fff0c2; --life-b:#d9a520;
+  --study:#dcebff; --study-b:#4a86d6;
+  --art:#f4dcfa; --art-b:#a660c2;
+  --sport:#d6f3df; --sport-b:#3d9e5f;
+  --fun:#ffe0e4; --fun-b:#e0607a;
+  --rh:34px; --hh:40px; --tw:56px;
+  --font:'Bpmf Iansui','Iansui','Microsoft JhengHei','PingFang TC',sans-serif;
+}
+body.zy-off{--font:'Iansui','Microsoft JhengHei','PingFang TC',sans-serif;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-tap-highlight-color:transparent}
+button,input,select{font-family:inherit;color:inherit}
+
+/* ---------- toolbar ---------- */
+.toolbar{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:2px dashed var(--line-hour);
+  padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.toolbar h1{font-size:22px;margin:0 auto 0 0;font-weight:400}
+.btn{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:6px 16px;font-size:17px;cursor:pointer;line-height:1.6}
+.btn:hover{background:#fff4e6}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent-d);color:#fff}
+.btn.primary:hover{background:var(--accent-d)}
+.btn.danger{border-color:#c95b5b;color:#c95b5b}
+.hint{width:100%;font-size:16px;margin:0;min-height:1.7em}
+.hint b{color:var(--accent-d);font-weight:400}
+
+/* ---------- sheet ---------- */
+.wrap{padding:16px}
+#sheet{max-width:1100px;margin:0 auto;background:var(--paper);border:2px solid var(--line-hour);border-radius:16px;padding:14px}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.sheet-head .deco{width:34px;height:34px;color:var(--ink)}
+.sheet-head .deco .fl{fill:var(--life)}
+.title-line{display:flex;align-items:baseline;gap:6px;font-size:24px}
+#who{font-size:24px;width:7em;border:none;border-bottom:2px solid var(--ink);background:transparent;text-align:center;padding:0 4px;outline:none}
+.legend{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.legend span{font-size:14px;padding:0 8px;border-radius:8px;background:#fff;line-height:1.7}
+
+.grid{display:grid;grid-template-columns:var(--tw) repeat(7,minmax(0,1fr));user-select:none;-webkit-user-select:none}
+.dayhead{height:var(--hh);display:flex;align-items:center;justify-content:center;font-size:17px;
+  border-bottom:2px solid var(--ink);font-family:'Iansui',var(--font);letter-spacing:.5px}
+.dayhead.we{color:#d0607a}
+.timecol .t{height:var(--rh);font-size:13px;text-align:right;padding-right:6px;transform:translateY(-.6em);font-family:'Iansui',sans-serif}
+.timecol .t.half{opacity:.5;font-size:11px}
+.day{position:relative;border-left:1px solid var(--line-hour)}
+.day:last-child{border-right:1px solid var(--line-hour)}
+.slot{height:var(--rh);border-bottom:1px dashed var(--line);cursor:pointer}
+.slot.hr{border-bottom:1px solid var(--line-hour)}
+.slot:hover{background:#fff7e8}
+.slot.sel{background:var(--sel)}
+.slot.pending{background:var(--sel);outline:2px solid var(--accent);outline-offset:-2px}
+.events{position:absolute;inset:0;pointer-events:none}
+
+/* ---------- event card ---------- */
+.ev{position:absolute;pointer-events:auto;cursor:pointer;border-radius:10px;padding:2px 4px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;
+  background:var(--c);border:2px solid var(--b)}
+.ev .ico{width:min(32px,70%);aspect-ratio:1;flex:none;color:var(--ink)}
+.ev .ico .fl{fill:#fff}
+.ev .ttl{font-size:15px;line-height:1.25;word-break:break-all}
+.ev.s1{flex-direction:row;gap:3px;padding:1px 4px}
+.ev.s1 .ico{width:24px;height:24px}
+.ev.s1 .ttl{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.ev.narrow .ttl{font-size:12px}
+.ev.narrow.s1 .ttl,.ev.narrow.s2 .ttl{display:none}
+.ev:hover{filter:brightness(.97);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+
+/* category borders — readable in black & white */
+.cat-life {--c:var(--life); --b:var(--life-b); border-style:dotted!important; border-width:2.5px!important}
+.cat-study{--c:var(--study);--b:var(--study-b);border-style:solid!important;  border-width:2px!important}
+.cat-art  {--c:var(--art);  --b:var(--art-b);  border-style:double!important; border-width:4px!important}
+.cat-sport{--c:var(--sport);--b:var(--sport-b);border-style:solid!important;  border-width:3.5px!important}
+.cat-fun  {--c:var(--fun);  --b:var(--fun-b);  border-style:dashed!important; border-width:2.5px!important}
+.legend span{background:var(--c);border:2px solid var(--b)}
+
+/* ---------- dialog ---------- */
+dialog{border:none;border-radius:20px;padding:0;max-width:min(680px,94vw);width:680px;background:var(--paper);color:var(--ink);font-family:var(--font);
+  box-shadow:0 10px 40px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(74,63,53,.35)}
+.dlg{padding:18px 20px;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:auto}
+.dlg h2{margin:0;font-size:21px;font-weight:400}
+.dlg .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:17px}
+.dlg label.lbl{min-width:4.5em}
+.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
+.icon-btn{border:2px solid transparent;background:var(--c);border-radius:14px;padding:6px 2px 4px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px}
+.icon-btn svg{width:38px;height:38px}
+.icon-btn svg .fl{fill:#fff}
+.icon-btn.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent)}
+#fTitle{font-size:19px;padding:4px 10px;border:2px solid var(--line-hour);border-radius:10px;flex:1;min-width:8em;background:#fff}
+.dlg select{font-size:17px;padding:4px 6px;border:2px solid var(--line-hour);border-radius:10px;background:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:2px solid var(--line-hour);background:#fff;border-radius:999px;padding:2px 12px;font-size:15px;cursor:pointer;font-family:'Iansui',var(--font)}
+.chip.on{background:var(--accent);border-color:var(--accent-d);color:#fff}
+.chip.cat{background:var(--c);border:2px solid var(--b);color:var(--ink);font-family:var(--font)}
+.chip.cat.on{box-shadow:0 0 0 3px var(--ink)}
+.chip:disabled{opacity:.35;cursor:default}
+.dlg .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+.dlg .actions .btn.danger{margin-right:auto}
+.dur{opacity:.7;font-size:15px}
+
+/* ---------- print: A4 portrait, black & white ---------- */
+@page{size:A4 portrait;margin:8mm}
+@media print{
+  :root{--rh:8.6mm;--hh:7.5mm;--tw:11mm}
+  html,body{background:#fff;color:#000}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toolbar,dialog{display:none!important}
+  .wrap{padding:0}
+  #sheet{max-width:none;width:194mm;border:none;border-radius:0;padding:0;background:#fff}
+  .sheet-head{margin:0 0 1.5mm;height:10mm;flex-wrap:nowrap}
+  .sheet-head .deco{width:8mm;height:8mm}
+  .sheet-head .deco .fl{fill:#fff}
+  .title-line,#who{font-size:14pt}
+  #who{border-bottom:1px solid #000;color:#000}
+  .legend span{font-size:8pt;padding:0 1.5mm}
+  .dayhead{font-size:10pt;border-bottom:.5mm solid #000;color:#000!important}
+  .timecol .t{font-size:7.5pt;padding-right:1.2mm}
+  .timecol .t.half{font-size:6pt;opacity:.6}
+  .day{border-left:.3mm solid #000}
+  .day:last-child{border-right:.3mm solid #000}
+  .slot{border-bottom:.2mm dashed #999}
+  .slot.hr{border-bottom:.3mm solid #444}
+  .slot.sel,.slot.pending,.slot:hover{background:none!important;outline:none!important}
+  .grid{border-bottom:.4mm solid #000}
+  .ev,.legend span{background:#fff!important;border-color:#000!important;color:#000;box-shadow:none!important;filter:none!important}
+  .ev{border-radius:2mm;padding:.3mm .8mm}
+  .ev .ico{width:min(8mm,70%);color:#000}
+  .ev .ttl{font-size:9pt}
+  .ev.s1 .ico{width:6mm;height:6mm}
+  .ev.s1 .ttl{font-size:8pt}
+  .ev.narrow .ttl{font-size:7pt}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>📅 我的一週行程表</h1>
+  <button class="btn" id="bUndo" disabled>↩ 上一步</button>
+  <button class="btn" id="bZy">注音：開</button>
+  <button class="btn danger" id="bClear">全部清除</button>
+  <button class="btn primary" id="bPrint">🖨 列印／存成 PDF</button>
+  <p class="hint" id="hint"></p>
+</div>
+
+<div class="wrap">
+  <div id="sheet">
+    <div class="sheet-head">
+      <svg class="deco" viewBox="0 0 48 48" id="decoIcon"></svg>
+      <div class="title-line"><input id="who" placeholder="名字" maxlength="8"><span>的一週行程表</span></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form class="dlg" method="dialog" id="form">
+    <h2 id="dTitle" tabindex="-1" autofocus style="outline:none">要做什麼呢？</h2>
+    <div class="icons" id="iconGrid"></div>
+    <div class="row"><label class="lbl" for="fTitle">名稱</label><input id="fTitle" maxlength="10" autocomplete="off"></div>
+    <div class="row"><label class="lbl">時間</label>
+      <select id="fStart"></select> 到 <select id="fEnd"></select> <span class="dur" id="fDur"></span></div>
+    <div class="row"><label class="lbl">種類</label><div class="chips" id="fCats"></div></div>
+    <div class="row"><label class="lbl">也放到</label><div class="chips" id="fCopy"></div></div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="dDel">🗑 刪除</button>
+      <button type="button" class="btn" id="dCancel">取消</button>
+      <button type="button" class="btn primary" id="dOk">完成</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* ================= constants ================= */
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const ROWS = 30;           // 07:00 – 22:00, every 30 minutes
+const START_HOUR = 7;
+const CATS = {
+  life:{name:'生活'}, study:{name:'學習'}, art:{name:'才藝'}, sport:{name:'運動'}, fun:{name:'休閒'}
+};
+const K = 'class="k"', F = 'class="fl"';
+const eye = (x,y)=>`<circle ${K} cx="${x}" cy="${y}" r="1.7"/>`;
+const ICONS = {
+  wake:{name:'起床',cat:'life',svg:`<path ${F} d="M10 32a14 14 0 0 1 28 0z"/><path d="M4 32h40M14 38h20M24 13V8M12 20l-3-3M36 20l3-3M6 26H3M42 26h3"/>${eye(19,26)}${eye(29,26)}<path d="M21 29q3 2.5 6 0"/>`},
+  brush:{name:'刷牙',cat:'life',svg:`<path ${F} d="M12 10c4-3 8 0 12 0s8-3 12 0c4 3 3 10 1 15l-3 13c-1 3-4 3-5 0l-2-8c-1-2-3-2-4 0l-2 8c-1 3-4 3-5 0l-3-13c-2-5-3-12 1-15z"/>${eye(19,18)}${eye(29,18)}<path d="M21 22q3 2.5 6 0M42 6v7M38.5 9.5h7"/>`},
+  breakfast:{name:'吃早餐',cat:'life',svg:`<path ${F} d="M12 41V22c-5-1-6-12 4-13h16c10 1 9 12 4 13v19z"/>${eye(19,26)}${eye(29,26)}<path d="M21 31q3 2.5 6 0"/>`},
+  school:{name:'上學',cat:'study',svg:`<rect ${F} x="10" y="14" width="28" height="29" rx="8"/><path d="M18 14v-3a6 6 0 0 1 12 0v3"/><rect x="16" y="28" width="16" height="10" rx="3"/><path d="M20 32h8"/>`},
+  class:{name:'上課',cat:'study',svg:`<rect ${F} x="5" y="7" width="38" height="25" rx="3"/><path d="M14 32l-3 9M34 32l3 9M12 26l4-12 4 12M13.5 22h5M27 16h10M27 21h7M27 26h9"/>`},
+  lunch:{name:'午餐',cat:'life',svg:`<path ${F} d="M24 7c-4 0-6 3-8 6L8 29c-3 6 0 12 7 12h18c7 0 10-6 7-12l-8-16c-2-3-4-6-8-6z"/><rect ${K} x="18" y="31" width="12" height="10" rx="1"/>${eye(19.5,23)}${eye(28.5,23)}<path d="M22 26.5q2 2 4 0"/>`},
+  nap:{name:'午睡',cat:'life',svg:`<path ${F} d="M12 38a8 8 0 0 1 0-16 10 10 0 0 1 19-4 8 8 0 0 1 7 20z"/><path d="M15 29q2.5 2.5 5 0M25 29q2.5 2.5 5 0M33 5h7l-7 7h7M41 15h4l-4 4h4"/>`},
+  home:{name:'放學',cat:'life',svg:`<path ${F} d="M7 22L24 8l17 14v18a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><rect x="19.5" y="30" width="9" height="12" rx="2"/><path ${K} d="M24 25c-4-3-5-5-3-7 1-1 2.6-.8 3 .6.4-1.4 2-1.6 3-.6 2 2 1 4-3 7z"/>`},
+  tutor:{name:'補習',cat:'study',svg:`<rect ${F} x="11" y="6" width="27" height="36" rx="3"/><path d="M11 13H7M11 20H7M11 27H7M11 34H7M17 14h15M17 20h15M18 30l4 4 8-8"/>`},
+  homework:{name:'寫作業',cat:'study',svg:`<rect ${F} x="6" y="7" width="25" height="33" rx="3"/><path d="M11 15h15M11 21h15M11 27h9"/><path ${F} d="M27 37L40 24l4.5 4.5L31.5 41.5 25 43z"/><path d="M27 37l4.5 4.5M37 27l4.5 4.5"/>`},
+  reading:{name:'閱讀',cat:'study',svg:`<path ${F} d="M24 14c-5-4-12-5-18-4v27c6-1 13 0 18 4 5-4 12-5 18-4V10c-6-1-13 0-18 4z"/><path d="M24 14v27M10 18c3 0 7 .5 10 2M10 24c3 0 7 .5 10 2M10 30c3 0 7 .5 10 2M28 20c3-1.5 7-2 10-2M28 26c3-1.5 7-2 10-2M28 32c3-1.5 7-2 10-2"/>`},
+  piano:{name:'練琴',cat:'art',svg:`<rect ${F} x="5" y="21" width="38" height="20" rx="3"/><path d="M12.6 21v20M20.2 21v20M27.8 21v20M35.4 21v20"/><rect ${K} x="10.8" y="21" width="3.6" height="11"/><rect ${K} x="18.4" y="21" width="3.6" height="11"/><rect ${K} x="33.6" y="21" width="3.6" height="11"/><path d="M27 15V6l9-2v9"/><circle ${K} cx="24.5" cy="15" r="2.6"/><circle ${K} cx="33.5" cy="13" r="2.6"/>`},
+  draw:{name:'畫畫',cat:'art',svg:`<path ${F} d="M24 6C13 6 5 14 5 24s7 18 17 18c3 0 4-2 3-4s0-5 3-5h5c5 0 10-4 10-10 0-9-8-17-19-17z"/><circle cx="15" cy="19" r="3"/><circle cx="24" cy="13" r="3"/><circle cx="33" cy="18" r="3"/><circle ${K} cx="14" cy="29" r="3"/>`},
+  sport:{name:'運動',cat:'sport',svg:`<circle ${F} cx="24" cy="24" r="18"/><path ${K} d="M24 17l6.5 4.7-2.5 7.6h-8l-2.5-7.6z"/><path d="M24 17V7M30.5 21.7l9-3M28 29.3l5.5 8M20 29.3l-5.5 8M17.5 21.7l-9-3"/>`},
+  swim:{name:'游泳',cat:'sport',svg:`<circle ${F} cx="24" cy="16" r="10"/><circle cx="20" cy="15" r="3"/><circle cx="28" cy="15" r="3"/><path d="M23 15h2M14.5 13h2.5M31 13h2.5M21.5 21q2.5 2 5 0M4 32q5-5 10 0t10 0 10 0 10 0M4 40q5-5 10 0t10 0 10 0 10 0"/>`},
+  bike:{name:'騎腳踏車',cat:'sport',svg:`<circle ${F} cx="12" cy="32" r="8"/><circle ${F} cx="36" cy="32" r="8"/><path d="M12 32l8-14M20 18h13M24 32l-4-14M24 32l9-14M33 18l3 14M12 32h12M16 16h8M31 12h6"/><circle ${K} cx="24" cy="32" r="1.8"/>`},
+  tv:{name:'看電視',cat:'fun',svg:`<rect ${F} x="5" y="14" width="38" height="26" rx="6"/><path d="M17 5l7 9 7-9M14 40v4M34 40v4"/>${eye(18,25)}${eye(30,25)}<path d="M20 30q4 3.5 8 0"/>`},
+  game:{name:'玩遊戲',cat:'fun',svg:`<path ${F} d="M14 13h20c6 0 9 5 10 12l1 7c1 5-4 8-8 4l-4-4H15l-4 4c-4 4-9 1-8-4l1-7c1-7 4-12 10-12z"/><path d="M14 19v9M9.5 23.5h9"/><circle ${K} cx="32" cy="20.5" r="2.2"/><circle ${K} cx="36.5" cy="25.5" r="2.2"/>`},
+  toy:{name:'玩玩具',cat:'fun',svg:`<circle ${F} cx="12" cy="13" r="6"/><circle ${F} cx="36" cy="13" r="6"/><circle ${F} cx="24" cy="27" r="15"/>${eye(18,23)}${eye(30,23)}<ellipse cx="24" cy="32" rx="6.5" ry="5"/><circle ${K} cx="24" cy="30" r="1.8"/><path d="M24 31.5v2.5"/>`},
+  outing:{name:'出去玩',cat:'fun',svg:`<path ${F} d="M5 33v-6c0-2 1-3 3-3l5-9c1-1.5 2.5-2 4-2h14c1.5 0 3 .5 4 2l5 9c2 0 3 1 3 3v6c0 1-1 2-2 2H7c-1 0-2-1-2-2z"/><path d="M15 24l3.5-6.5H23V24zM27 24v-6.5h4.5L35 24z"/><circle ${F} cx="15" cy="35" r="4.5"/><circle ${F} cx="33" cy="35" r="4.5"/>`},
+  chores:{name:'做家事',cat:'life',svg:`<path d="M24 3v18"/><rect ${F} x="16" y="20" width="16" height="6" rx="2"/><path ${F} d="M16 26h16l5 17H11z"/><path d="M19.5 30l-2 13M24 30v13M28.5 30l2 13M40 8v6M37 11h6M8 14v4M6 16h4"/>`},
+  bath:{name:'洗澡',cat:'life',svg:`<circle cx="15" cy="15" r="4"/><circle cx="24" cy="9" r="3"/><circle cx="32" cy="17" r="5"/><path ${F} d="M4 24h40v4c0 7-5 12-12 12H16C9 40 4 35 4 28z"/><path d="M13 40l-2 4M35 40l2 4"/>`},
+  dinner:{name:'吃晚餐',cat:'life',svg:`<path d="M30 23l12-17M34 23l11-13M14 18c-2-3 2-4 0-7M22 18c-2-3 2-4 0-7"/><path ${F} d="M5 23h38c0 10-8 17-19 17S5 33 5 23z"/><path d="M18 41h12"/>${eye(19,29)}${eye(29,29)}<path d="M22 32.5q2 1.8 4 0"/>`},
+  sleep:{name:'睡覺',cat:'life',svg:`<path ${F} d="M28 5a19 19 0 1 0 15 30A15 15 0 0 1 28 5z"/><path d="M14 25q3 3 6 0M41 7v8M37 11h8M36 22v4M34 24h4"/>`},
+  other:{name:'其他',cat:'life',svg:`<path ${F} d="M24 5l5.6 11.6 12.7 1.7-9.3 8.9 2.3 12.6L24 33.8l-11.3 6 2.3-12.6-9.3-8.9 12.7-1.7z"/>${eye(20,24)}${eye(28,24)}<path d="M22 28q2 1.8 4 0"/>`},
+};
+const svgOf = key => `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${(ICONS[key]||ICONS.other).svg}</svg>`;
+const timeLabel = b => `${START_HOUR + Math.floor(b/2)}:${b%2 ? '30' : '00'}`;
+
+/* ================= state & storage ================= */
+const STORE = 'kid-week-schedule-v1';
+let state = {name:'', zy:true, events:[]};
+try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && Array.isArray(s.events)) state = Object.assign(state, s); } catch(e){}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){} };
+const undoStack = [];
+function commit(mutator){
+  undoStack.push(JSON.stringify(state.events));
+  if (undoStack.length > 60) undoStack.shift();
+  mutator();
+  save(); render();
+}
+const uid = () => Math.random().toString(36).slice(2,10);
+const $ = s => document.querySelector(s);
+
+/* ================= build static grid ================= */
+const grid = $('#grid');
+function buildGrid(){
+  let h = '<div></div>' + DAYS.map((d,i)=>`<div class="dayhead${i>4?' we':''}">${d}</div>`).join('');
+  h += '<div class="timecol">' + Array.from({length:ROWS},(_,i)=>`<div class="t${i%2?' half':''}">${timeLabel(i)}</div>`).join('') + '</div>';
+  DAYS.forEach((_,d)=>{
+    h += `<div class="day" data-day="${d}">` +
+      Array.from({length:ROWS},(_,i)=>`<div class="slot${i%2?' hr':''}" data-day="${d}" data-slot="${i}"></div>`).join('') +
+      `<div class="events"></div></div>`;
+  });
+  grid.innerHTML = h;
+  $('#decoIcon').outerHTML = `<span class="deco">${svgOf('other')}</span>`;
+  $('#legend').innerHTML = Object.entries(CATS).map(([k,c])=>`<span class="cat-${k}">${c.name}</span>`).join('');
+}
+
+/* ================= layout: side-by-side overlaps ================= */
+function layoutDay(evs){
+  evs = evs.slice().sort((a,b)=>a.start-b.start || b.span-a.span);
+  const out = []; let cluster = [], cols = [], clusterEnd = -1;
+  const flush = () => { cluster.forEach(o=>o.cols = cols.length); out.push(...cluster); cluster = []; cols = []; };
+  for (const e of evs){
+    if (cluster.length && e.start >= clusterEnd){ flush(); clusterEnd = -1; }
+    let c = cols.findIndex(end => end <= e.start);
+    if (c < 0){ c = cols.length; cols.push(0); }
+    cols[c] = e.start + e.span;
+    cluster.push({e, col:c});
+    clusterEnd = Math.max(clusterEnd, e.start + e.span);
+  }
+  if (cluster.length) flush();
+  return out;
+}
+
+// 破音字：用注音 IVS 選字（U+E01E1 = 第二個讀音），例如「睡覺」的「覺」讀 ㄐㄧㄠˋ
+const ZY_FIX = [[/([睡午])覺(?![\u{E01E0}-\u{E01EF}])/gu, '$1覺\u{E01E1}']];
+const zy = t => ZY_FIX.reduce((s,[re,rep])=>s.replace(re,rep), String(t));
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function render(){
+  document.querySelectorAll('.day').forEach(dayEl=>{
+    const d = +dayEl.dataset.day;
+    const layer = dayEl.querySelector('.events');
+    layer.innerHTML = layoutDay(state.events.filter(e=>e.day===d)).map(({e,col,cols})=>{
+      const w = 100/cols;
+      const cls = ['ev','cat-'+e.cat];
+      if (e.span===1) cls.push('s1'); if (e.span===2) cls.push('s2');
+      if (cols>1) cls.push('narrow');
+      return `<div class="${cls.join(' ')}" data-id="${e.id}" title="${esc(e.title)} ${timeLabel(e.start)}–${timeLabel(e.start+e.span)}"
+        style="top:calc(${e.start/ROWS*100}% + 2px);height:calc(${e.span/ROWS*100}% - 4px);left:calc(${col*w}% + 2px);width:calc(${w}% - 4px)">
+        <div class="ico">${svgOf(e.icon)}</div><div class="ttl">${esc(zy(e.title))}</div></div>`;
+    }).join('');
+  });
+  $('#bUndo').disabled = !undoStack.length;
+  $('#bZy').textContent = state.zy ? '注音：開' : '注音：關';
+  document.body.classList.toggle('zy-off', !state.zy);
+  if (document.activeElement !== $('#who')) $('#who').value = state.name || '';
+}
+
+/* ================= selecting time slots ================= */
+let pending = null;   // {day, slot} waiting for second tap
+let drag = null;      // {day, from, to, moved}
+const hint = $('#hint');
+const HINT_IDLE = '① 點一下開始的格子　② 再點一下結束的格子　③ 選一個圖案。點已經排好的行程可以修改喔！';
+hint.textContent = HINT_IDLE;
+
+function paintSel(day, a, b){
+  document.querySelectorAll('.slot.sel,.slot.pending').forEach(s=>s.classList.remove('sel','pending'));
+  if (day == null) return;
+  const [lo,hi] = a<=b ? [a,b] : [b,a];
+  for (let i=lo;i<=hi;i++) grid.querySelector(`.slot[data-day="${day}"][data-slot="${i}"]`).classList.add('sel');
+}
+function slotFromPoint(x,y){
+  const el = document.elementFromPoint(x,y);
+  return el && el.classList.contains('slot') ? {day:+el.dataset.day, slot:+el.dataset.slot} : null;
+}
+
+grid.addEventListener('pointerdown', ev=>{
+  const s = ev.target.closest('.slot'); if (!s) return;
+  const day = +s.dataset.day, slot = +s.dataset.slot;
+  drag = {mouse: ev.pointerType === 'mouse', day, from:slot, to:slot, moved:false};
+});
+window.addEventListener('pointermove', ev=>{
+  if (!drag || !drag.mouse || !(ev.buttons & 1)) return;
+  const p = slotFromPoint(ev.clientX, ev.clientY);
+  if (p && p.day===drag.day && p.slot!==drag.to){ drag.to = p.slot; drag.moved = true; pending = null; paintSel(drag.day, drag.from, drag.to); }
+});
+window.addEventListener('pointercancel', ()=>{ drag = null; });
+window.addEventListener('pointerup', ev=>{
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.moved) openNew(d.day, Math.min(d.from,d.to), Math.max(d.from,d.to));
+  else if (ev.target.closest && ev.target.closest('.slot')) tapSlot(d.day, d.from);
+});
+grid.addEventListener('click', ev=>{
+  const card = ev.target.closest('.ev');
+  if (card){ cancelPending(); openEdit(card.dataset.id); }
+});
+function tapSlot(day, slot){
+  if (pending && pending.day === day){
+    const a = Math.min(pending.slot, slot), b = Math.max(pending.slot, slot);
+    pending = null; openNew(day, a, b); return;
+  }
+  pending = {day, slot};
+  paintSel(day, slot, slot);
+  grid.querySelector(`.slot[data-day="${day}"][data-slot="${slot}"]`).classList.add('pending');
+  hint.innerHTML = `從 <b>${DAYS[day]} ${timeLabel(slot)}</b> 開始，再點一下<b>最後一格</b>（只要半小時就再點同一格）。`;
+}
+function cancelPending(){ pending = null; paintSel(null); hint.textContent = HINT_IDLE; }
+document.addEventListener('keydown', e=>{ if (e.key==='Escape' && !dlg.open) cancelPending(); });
+
+/* ================= dialog ================= */
+const dlg = $('#dlg');
+let editing = null;   // {id|null, day, start, end(exclusive), icon, title, cat, copy:Set}
+function fillTimeSelects(){
+  $('#fStart').innerHTML = Array.from({length:ROWS},(_,i)=>`<option value="${i}">${timeLabel(i)}</option>`).join('');
+  $('#fEnd').innerHTML = Array.from({length:ROWS},(_,i)=>`<option value="${i+1}">${timeLabel(i+1)}</option>`).join('');
+}
+function syncDialog(){
+  const E = editing;
+  $('#iconGrid').querySelectorAll('.icon-btn').forEach(b=>b.classList.toggle('on', b.dataset.icon===E.icon));
+  $('#fStart').value = E.start; $('#fEnd').value = E.end;
+  [...$('#fEnd').options].forEach(o=>o.disabled = +o.value <= E.start);
+  const mins = (E.end-E.start)*30;
+  $('#fDur').textContent = mins>=60 ? `（${mins/60} 小時）` : '（半小時）';
+  $('#fCats').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', c.dataset.cat===E.cat));
+  $('#fCopy').querySelectorAll('.chip').forEach(c=>{
+    const d = +c.dataset.day; c.disabled = d===E.day; c.classList.toggle('on', E.copy.has(d));
+  });
+  $('#dOk').disabled = !E.icon;
+}
+function buildDialog(){
+  $('#iconGrid').innerHTML = Object.entries(ICONS).map(([k,v])=>
+    `<button type="button" class="icon-btn cat-${v.cat}" data-icon="${k}">${svgOf(k)}<span>${zy(v.name)}</span></button>`).join('');
+  $('#fCats').innerHTML = Object.entries(CATS).map(([k,c])=>`<button type="button" class="chip cat cat-${k}" data-cat="${k}">${c.name}</button>`).join('');
+  $('#fCopy').innerHTML = DAYS.map((d,i)=>`<button type="button" class="chip" data-day="${i}">${d.slice(0,3)}</button>`).join('') +
+    `<button type="button" class="chip" id="cpWeekday">平日都要</button>`;
+  fillTimeSelects();
+
+  $('#iconGrid').addEventListener('click', e=>{
+    const b = e.target.closest('.icon-btn'); if (!b) return;
+    const prev = ICONS[editing.icon];
+    const t = $('#fTitle').value.trim();
+    editing.icon = b.dataset.icon;
+    if (!t || (prev && t===prev.name)) $('#fTitle').value = ICONS[editing.icon].name;
+    editing.cat = ICONS[editing.icon].cat;
+    syncDialog();
+  });
+  $('#fStart').addEventListener('change', e=>{
+    const len = editing.end - editing.start;
+    editing.start = +e.target.value;
+    editing.end = Math.min(ROWS, editing.start + len);
+    syncDialog();
+  });
+  $('#fEnd').addEventListener('change', e=>{ editing.end = +e.target.value; syncDialog(); });
+  $('#fCats').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(c){ editing.cat=c.dataset.cat; syncDialog(); }});
+  $('#fCopy').addEventListener('click', e=>{
+    const c = e.target.closest('.chip'); if (!c) return;
+    if (c.id==='cpWeekday'){
+      const all = [0,1,2,3,4].filter(d=>d!==editing.day).every(d=>editing.copy.has(d));
+      [0,1,2,3,4].forEach(d=>{ if (d!==editing.day) all ? editing.copy.delete(d) : editing.copy.add(d); });
+    } else { const d=+c.dataset.day; editing.copy.has(d) ? editing.copy.delete(d) : editing.copy.add(d); }
+    syncDialog();
+  });
+  $('#dCancel').addEventListener('click', ()=>dlg.close());
+  $('#dDel').addEventListener('click', ()=>{
+    const id = editing.id;
+    commit(()=>{ state.events = state.events.filter(e=>e.id!==id); });
+    dlg.close();
+  });
+  $('#dOk').addEventListener('click', ()=>{
+    const E = editing; if (!E.icon) return;
+    const title = $('#fTitle').value.trim() || ICONS[E.icon].name;
+    const base = {start:E.start, span:E.end-E.start, icon:E.icon, title, cat:E.cat};
+    commit(()=>{
+      if (E.id){ Object.assign(state.events.find(e=>e.id===E.id), base); }
+      else state.events.push({id:uid(), day:E.day, ...base});
+      E.copy.forEach(d=>state.events.push({id:uid(), day:d, ...base}));
+    });
+    dlg.close();
+  });
+  $('#form').addEventListener('submit', e=>e.preventDefault());
+  dlg.addEventListener('close', cancelPending);
+}
+function openNew(day, a, b){
+  editing = {id:null, day, start:a, end:b+1, icon:null, title:'', cat:'life', copy:new Set()};
+  paintSel(day, a, b);
+  $('#dTitle').textContent = `${DAYS[day]}　${timeLabel(a)} – ${timeLabel(b+1)}　要做什麼呢？`;
+  $('#fTitle').value = '';
+  $('#dDel').hidden = true;
+  syncDialog(); dlg.showModal();
+}
+function openEdit(id){
+  const e = state.events.find(x=>x.id===id); if (!e) return;
+  editing = {id, day:e.day, start:e.start, end:e.start+e.span, icon:e.icon, title:e.title, cat:e.cat, copy:new Set()};
+  $('#dTitle').textContent = `修改 ${DAYS[e.day]} 的行程`;
+  $('#fTitle').value = e.title;
+  $('#dDel').hidden = false;
+  syncDialog(); dlg.showModal();
+}
+
+/* ================= toolbar ================= */
+$('#bUndo').addEventListener('click', ()=>{
+  if (!undoStack.length) return;
+  state.events = JSON.parse(undoStack.pop()); save(); render();
+});
+$('#bZy').addEventListener('click', ()=>{ state.zy = !state.zy; save(); render(); });
+$('#bClear').addEventListener('click', ()=>{
+  if (!state.events.length) return;
+  if (confirm('確定要把整個星期的行程都清掉嗎？（可以按「上一步」救回來）')) commit(()=>{ state.events = []; });
+});
+$('#bPrint').addEventListener('click', ()=>{ cancelPending(); window.print(); });
+$('#who').addEventListener('input', e=>{ state.name = e.target.value; save(); });
+
+buildGrid(); buildDialog(); render();
+</script>
+</body>
+</html>
