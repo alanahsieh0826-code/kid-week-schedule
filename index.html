@@ -16,6 +16,7 @@
   --sport:#d6f3df; --sport-b:#3d9e5f;
   --fun:#ffe0e4; --fun-b:#e0607a;
   --rest:#e1e5f0; --rest-b:#5c6b8a;
+  --home:#ffe2c7; --home-b:#e0823a;
   --rh:34px; --hh:40px; --tw:56px;
   --font:'Bpmf Iansui','Iansui','Microsoft JhengHei','PingFang TC',sans-serif;
 }
@@ -85,6 +86,7 @@ button,input,select{font-family:inherit;color:inherit}
 .cat-sport{--c:var(--sport);--b:var(--sport-b);border-style:solid!important;  border-width:3.5px!important}
 .cat-fun  {--c:var(--fun);  --b:var(--fun-b);  border-style:dashed!important; border-width:2.5px!important}
 .cat-rest {--c:var(--rest); --b:var(--rest-b); border-style:solid!important;  border-width:2px!important}
+.cat-home {--c:var(--home); --b:var(--home-b); border-style:solid!important;  border-width:2px 2px 2px 7px!important}
 .legend span{background:var(--c);border:2px solid var(--b)}
 
 /* ---------- dialog ---------- */
@@ -193,7 +195,7 @@ const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sun
 const ROWS = 30;           // 07:00 – 22:00, every 30 minutes
 const START_HOUR = 7;
 const CATS = {
-  life:{name:'生活'}, study:{name:'學習'}, art:{name:'才藝'}, sport:{name:'運動'}, fun:{name:'休閒'}, rest:{name:'休息'}
+  life:{name:'生活'}, study:{name:'學習'}, art:{name:'才藝'}, sport:{name:'運動'}, fun:{name:'休閒'}, rest:{name:'休息'}, home:{name:'回家'}
 };
 const K = 'class="k"', F = 'class="fl"';
 const eye = (x,y)=>`<circle ${K} cx="${x}" cy="${y}" r="1.7"/>`;
@@ -205,7 +207,7 @@ const ICONS = {
   class:{name:'上課',cat:'study',svg:`<rect ${F} x="5" y="7" width="38" height="25" rx="3"/><path d="M14 32l-3 9M34 32l3 9M12 26l4-12 4 12M13.5 22h5M27 16h10M27 21h7M27 26h9"/>`},
   lunch:{name:'午餐',cat:'life',svg:`<path ${F} d="M24 7c-4 0-6 3-8 6L8 29c-3 6 0 12 7 12h18c7 0 10-6 7-12l-8-16c-2-3-4-6-8-6z"/><rect ${K} x="18" y="31" width="12" height="10" rx="1"/>${eye(19.5,23)}${eye(28.5,23)}<path d="M22 26.5q2 2 4 0"/>`},
   nap:{name:'午睡',cat:'rest',svg:`<path ${F} d="M12 38a8 8 0 0 1 0-16 10 10 0 0 1 19-4 8 8 0 0 1 7 20z"/><path d="M15 29q2.5 2.5 5 0M25 29q2.5 2.5 5 0M33 5h7l-7 7h7M41 15h4l-4 4h4"/>`},
-  home:{name:'放學',cat:'life',svg:`<path ${F} d="M7 22L24 8l17 14v18a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><rect x="19.5" y="30" width="9" height="12" rx="2"/><path ${K} d="M24 25c-4-3-5-5-3-7 1-1 2.6-.8 3 .6.4-1.4 2-1.6 3-.6 2 2 1 4-3 7z"/>`},
+  home:{name:'放學',cat:'home',svg:`<path ${F} d="M7 22L24 8l17 14v18a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><rect x="19.5" y="30" width="9" height="12" rx="2"/><path ${K} d="M24 25c-4-3-5-5-3-7 1-1 2.6-.8 3 .6.4-1.4 2-1.6 3-.6 2 2 1 4-3 7z"/>`},
   tutor:{name:'補習',cat:'study',svg:`<rect ${F} x="11" y="6" width="27" height="36" rx="3"/><path d="M11 13H7M11 20H7M11 27H7M11 34H7M17 14h15M17 20h15M18 30l4 4 8-8"/>`},
   homework:{name:'寫作業',cat:'study',svg:`<rect ${F} x="6" y="7" width="25" height="33" rx="3"/><path d="M11 15h15M11 21h15M11 27h9"/><path ${F} d="M27 37L40 24l4.5 4.5L31.5 41.5 25 43z"/><path d="M27 37l4.5 4.5M37 27l4.5 4.5"/>`},
   reading:{name:'閱讀',cat:'study',svg:`<path ${F} d="M24 14c-5-4-12-5-18-4v27c6-1 13 0 18 4 5-4 12-5 18-4V10c-6-1-13 0-18 4z"/><path d="M24 14v27M10 18c3 0 7 .5 10 2M10 24c3 0 7 .5 10 2M10 30c3 0 7 .5 10 2M28 20c3-1.5 7-2 10-2M28 26c3-1.5 7-2 10-2M28 32c3-1.5 7-2 10-2"/>`},
@@ -234,7 +236,8 @@ const STORE = 'kid-week-schedule-v1';
 let state = {name:'', zy:true, events:[]};
 try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && Array.isArray(s.events)) state = Object.assign(state, s); } catch(e){}
 // 舊資料：午睡、睡覺原本歸在「生活」，改成新的「休息」
-state.events.forEach(e=>{ if ((e.icon==='nap'||e.icon==='sleep') && e.cat==='life') e.cat='rest'; });
+state.events.forEach(e=>{ if ((e.icon==='nap'||e.icon==='sleep') && e.cat==='life') e.cat='rest';
+  if (e.icon==='home' && e.cat==='life') e.cat='home'; });
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){} };
 const undoStack = [];
 function commit(mutator){
